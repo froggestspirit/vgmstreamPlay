@@ -18,8 +18,8 @@
 
 #include <ao/ao.h>
 
-#include "../src/vgmstream.h"
-#include "../src/plugins.h"
+#include "src/vgmstream.h"
+#include "src/plugins.h"
 
 #define LITTLE_ENDIAN_OUTPUT 1 /* untested in BE */
 
