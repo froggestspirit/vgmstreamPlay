@@ -4,7 +4,7 @@ OUTPUT_123 = vgmstream123
 
 # -DUSE_ALLOCA
 
-CFLAGS += -ffast-math -O3 -Wall -Werror=format-security -Wdeclaration-after-statement -Wvla -DVAR_ARRAYS -Iext_includes $(EXTRA_CFLAGS)
+CFLAGS += -ffast-math -O3 -Wall -Werror=format-security -Wdeclaration-after-statement -Wvla -DVAR_ARRAYS -I../ext_includes $(EXTRA_CFLAGS)
 LDFLAGS += -Lsrc -Lext_libs -lvgmstream $(EXTRA_LDFLAGS) -lm
 TARGET_EXT_LIBS = 
 
