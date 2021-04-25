@@ -21,6 +21,11 @@
 #include "src/vgmstream.h"
 #include "src/plugins.h"
 
+#include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+
 #define LITTLE_ENDIAN_OUTPUT 1 /* untested in BE */
 
 #define DEFAULT_PARAMS { 0, -1, 2.0, 10.0, 0.0,   0, 0, 0, 0 }
@@ -204,8 +209,16 @@ static int play_vgmstream(const char *filename, song_settings_t *cfg) {
     int32_t decode_pos_samples = 0;
     int32_t length_samples = vgmstream_get_samples(vgmstream);
     if (length_samples <= 0) goto fail;
-
+    
+    static char buf[100];
     while (!interrupted) {
+        fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+        scanf("%s", buf);
+        if (strlen(buf)) {
+            if(strcmp(buf, "quit") == 0) interrupted = 1;
+            *buf = 0;
+        }
+
         int to_do;
 
         if (decode_pos_samples + max_buffer_samples > length_samples)
@@ -216,7 +229,7 @@ static int play_vgmstream(const char *filename, song_settings_t *cfg) {
         if (to_do <= 0) {
             break; /* EOF */
         }
-
+        
         render_vgmstream(buffer, to_do, vgmstream);
 
 #if LITTLE_ENDIAN_OUTPUT
