@@ -210,12 +210,14 @@ static int play_vgmstream(const char *filename, song_settings_t *cfg) {
     int32_t length_samples = vgmstream_get_samples(vgmstream);
     if (length_samples <= 0) goto fail;
     
-    static char buf[100];
+    char buf[100];
     while (!interrupted) {
-        fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
         scanf("%s", buf);
         if (strlen(buf)) {
-            if(strcmp(buf, "quit") == 0) interrupted = 1;
+            if(strcmp(buf, "QUIT") == 0){
+                ret = -1;
+                break;
+            }
             *buf = 0;
         }
 
@@ -252,10 +254,6 @@ static int play_vgmstream(const char *filename, song_settings_t *cfg) {
 
 fail:
     close_vgmstream(vgmstream);
-
-    for (i = 0; i < 4; i++)
-        fclose(save_fps[i]);
-
     return ret;
 }
 
@@ -268,17 +266,28 @@ int main(int argc, char **argv) {
     driver_id = ao_default_driver_id();
     memset(&current_sample_format, 0, sizeof(current_sample_format));
 
-    if (argc == 1) {
-        /* We were invoked with no arguments */
-        goto done;
-    }
+    int cmdCount = 0;
+    char buf[100];
+    fcntl(0, F_SETFL, fcntl(0, F_GETFL) | O_NONBLOCK);
+    while(1){
+        scanf("%s", buf);
+        if(!cmdCount++) *buf = 0;
+        if (strlen(buf)) {
+            if(strcmp(buf, "QUIT") == 0) goto done;
+            if(strcmp(buf, "LOAD") == 0){
+                scanf("%s", buf);
+                if (strlen(buf)) {
+                    song_settings_t default_par = DEFAULT_PARAMS;
+                    cfg = default_par;
+                    if (play_vgmstream(buf, &cfg)) {
+                        error = 1;
+                        goto done;
+                    }
+                }             
 
-    song_settings_t default_par = DEFAULT_PARAMS;
-    cfg = default_par;
-
-    if (play_vgmstream(argv[1], &cfg)) {
-        error = 1;
-        goto done;
+            }
+            *buf = 0;
+        }
     }
 
 done:
